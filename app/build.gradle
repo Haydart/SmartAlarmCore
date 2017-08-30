@@ -37,12 +37,15 @@ dependencies {
 
 	provided "com.google.android.things:androidthings:$versions.androidthings"
 
+	//Firebase
 	compile "com.google.firebase:firebase-auth:$versions.firebase"
 	compile "com.google.firebase:firebase-core:$versions.firebase"
 	compile "com.google.firebase:firebase-database:$versions.firebase"
 	compile "com.google.firebase:firebase-crash:$versions.firebase"
 	compile "com.google.firebase:firebase-storage:$versions.firebase"
+	compile "com.google.firebase:firebase-messaging:$versions.firebase"
 
+	//Rx
 	compile "io.reactivex.rxjava2:rxkotlin:$versions.rxkotlin"
 	compile "io.reactivex.rxjava2:rxandroid:$versions.rxandroid"
 
@@ -54,5 +57,4 @@ dependencies {
 		transitive = false
 	}
 }
-
 apply plugin: 'com.google.gms.google-services'

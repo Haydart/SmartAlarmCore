@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "427734710855",
+    "firebase_url": "https://smartalarmcore.firebaseio.com",
+    "project_id": "smartalarmcore",
+    "storage_bucket": "smartalarmcore.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427734710855:android:ad0c9d603a1ac344",
+        "android_client_info": {
+          "package_name": "pl.rmakowiecki.smartalarmcore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "427734710855-122l64hercu9tsjibmdsi2mdnu1lgvto.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pl.rmakowiecki.smartalarmcore",
+            "certificate_hash": "ca762f00fd9350648f4d5559fcaf68f8fc53d0e6"
+          }
+        },
+        {
+          "client_id": "427734710855-0e4b7n6s0tg2cnjvg5ps4nap488n3k6t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDKLJ8SJc5DTQ4UWXlLM0LvH31XlMKfW0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "427734710855-0e4b7n6s0tg2cnjvg5ps4nap488n3k6t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
