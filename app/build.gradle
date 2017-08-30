@@ -44,6 +44,7 @@ dependencies {
 	compile "com.google.firebase:firebase-crash:$versions.firebase"
 	compile "com.google.firebase:firebase-storage:$versions.firebase"
 	compile "com.google.firebase:firebase-messaging:$versions.firebase"
+	compile "com.google.firebase:firebase-perf:$versions.firebase"
 
 	//Rx
 	compile "io.reactivex.rxjava2:rxkotlin:$versions.rxkotlin"
@@ -58,3 +59,4 @@ dependencies {
 	}
 }
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.firebase-perf'
