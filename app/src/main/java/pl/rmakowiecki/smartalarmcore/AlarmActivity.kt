@@ -1,5 +1,6 @@
 package pl.rmakowiecki.smartalarmcore
 
+import AlarmController
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
