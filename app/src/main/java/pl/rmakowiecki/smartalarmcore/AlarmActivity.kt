@@ -8,12 +8,17 @@ import android.util.Log
 import com.google.android.things.pio.Gpio
 import com.google.firebase.database.FirebaseDatabase
 
-class MainActivity : AppCompatActivity() {
+class AlarmActivity : AppCompatActivity() {
+
+    private lateinit var alarmController: AlarmController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         printWifiNetworkStatus()
+        alarmController = initSystemController()
     }
+
+    private fun initSystemController() = AlarmController(CameraPeripheryContract.create(this))
 
     private fun sendAlarmTriggerData(gpio: Gpio) {
         FirebaseDatabase
