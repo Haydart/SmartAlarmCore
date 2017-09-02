@@ -1,4 +1,3 @@
-package pl.rmakowiecki.homepiecore.peripherals.motion_sensor
 
 import io.reactivex.Single
 
