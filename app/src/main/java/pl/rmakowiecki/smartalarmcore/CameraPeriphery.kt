@@ -50,9 +50,7 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
         context = null
     }
 
-    override fun captureFrame() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun captureFrame() = Unit
 
     private fun startBackgroundThread() {
         backgroundThread = HandlerThread("Camera Background")
