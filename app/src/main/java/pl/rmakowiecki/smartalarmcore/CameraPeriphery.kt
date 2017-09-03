@@ -51,21 +51,4 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
     }
 
     override fun captureFrame() = Unit
-
-    private fun startBackgroundThread() {
-        backgroundThread = HandlerThread("Camera Background")
-        backgroundThread?.start()
-        backgroundHandler = Handler(backgroundThread?.looper)
-    }
-
-    private fun stopBackgroundThread() {
-        backgroundThread?.quitSafely()
-        try {
-            backgroundThread?.join()
-            backgroundThread = null
-            backgroundHandler = null
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
-    }
 }
