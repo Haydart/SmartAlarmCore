@@ -16,6 +16,7 @@ class AlarmActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         printWifiNetworkStatus()
         alarmController = initSystemController()
+        alarmController.observeBeamBreakDetector()
     }
 
     private fun initSystemController() = AlarmController(BeamBreakDetectorPeripheryContract.create())
