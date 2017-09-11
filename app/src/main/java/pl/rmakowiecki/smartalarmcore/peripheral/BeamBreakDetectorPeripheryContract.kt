@@ -1,3 +1,5 @@
+package pl.rmakowiecki.smartalarmcore.peripheral
+
 import io.reactivex.Observable
 import pl.rmakowiecki.smartalarmcore.AlarmState
 
