@@ -14,7 +14,6 @@ class AlarmInteractor : AlarmInteractorContract {
     private val databaseNode = FirebaseDatabase
             .getInstance()
             .reference
-            .child("active")
 
     override fun observeAlarmArmingState(): Observable<AlarmArmingState> = Observable.create { emitter ->
         val valueListener = object : ValueEventListener {
@@ -23,13 +22,14 @@ class AlarmInteractor : AlarmInteractorContract {
             override fun onCancelled(databaseError: DatabaseError?) = emitter.onComplete()
         }
 
-        databaseNode.addValueEventListener(valueListener)
+        databaseNode.child("active").addValueEventListener(valueListener)
 
-        emitter.setCancellable { databaseNode.removeEventListener(valueListener) }
+        emitter.setCancellable { databaseNode.child("active").removeEventListener(valueListener) }
     }
 
     override fun updateAlarmState(alarmState: AlarmTriggerState) {
-        databaseNode.setValue(alarmState.toBoolean())
+
+        databaseNode.child("trigger").setValue(alarmState.toBoolean())
                 .addOnCompleteListener { }
     }
 }

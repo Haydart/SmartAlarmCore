@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
+import pl.rmakowiecki.smartalarmcore.remote.AlarmInteractorContract
 
 class AlarmActivity : AppCompatActivity() {
 
@@ -19,7 +20,10 @@ class AlarmActivity : AppCompatActivity() {
         alarmController.observeAlarm()
     }
 
-    private fun initSystemController() = AlarmController(BeamBreakDetectorPeripheryContract.create())
+    private fun initSystemController() = AlarmController(
+            BeamBreakDetectorPeripheryContract.create(),
+            AlarmInteractorContract.create()
+    )
 
     private fun printWifiNetworkStatus() {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

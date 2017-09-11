@@ -7,8 +7,7 @@ import pl.rmakowiecki.smartalarmcore.remote.AlarmInteractorContract
 
 class AlarmController(
         val beamBreakDetector: BeamBreakDetectorPeripheryContract,
-        val interactor: AlarmInteractorContract
-) {
+        val interactor: AlarmInteractorContract) {
 
     private var alarmArmingDisposable = Disposables.disposed()
     private var alarmTriggerDisposable = Disposables.disposed()
@@ -16,24 +15,25 @@ class AlarmController(
     fun observeAlarm() {
         alarmArmingDisposable = interactor
                 .observeAlarmArmingState()
+                .applyIoSchedulers()
                 .subscribeBy(
-                        onNext = this::observeTriggerStateIfArmed,
-                        onComplete = {},
-                        onError = {}
+                        onNext = this::observeTriggerStateIfArmed
                 )
     }
 
-    private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) =
-            if (armingState == AlarmArmingState.ARMED) {
-                observeBeamBreakDetector()
-            } else Unit
+    private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) {
+        print("New alarm arming state $armingState")
+        if (armingState == AlarmArmingState.ARMED) {
+            observeBeamBreakDetector()
+        } else alarmTriggerDisposable.dispose()
+    }
 
-    fun observeBeamBreakDetector() = if (!alarmTriggerDisposable.isDisposed) {
+    private fun observeBeamBreakDetector() = if (alarmTriggerDisposable.isDisposed) {
         alarmTriggerDisposable = beamBreakDetector
                 .registerForChanges()
                 .applyIoSchedulers()
-                .subscribe {
-                    interactor.updateAlarmState(it)
-                }
+                .subscribeBy(
+                        onNext = { interactor.updateAlarmState(it) }
+                )
     } else Unit
 }
