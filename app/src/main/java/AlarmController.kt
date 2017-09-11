@@ -2,6 +2,7 @@ import android.util.Log
 import com.google.android.things.pio.Gpio
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.disposables.CompositeDisposable
+import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
 import pl.rmakowiecki.smartalarmcore.extensions.handle
 import pl.rmakowiecki.smartalarmcore.peripheral.BeamBreakDetectorPeripheryContract
 
@@ -12,6 +13,7 @@ class AlarmController(val beamBreakDetector: BeamBreakDetectorPeripheryContract)
     fun observeBeamBreakDetector() =
             disposables handle beamBreakDetector
                     .registerForChanges()
+                    .applyIoSchedulers()
                     .subscribe {
                         Log.d(this.javaClass.simpleName, "$it")
                     }
