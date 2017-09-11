@@ -1,37 +1,39 @@
-import android.util.Log
-import com.google.android.things.pio.Gpio
-import com.google.firebase.database.FirebaseDatabase
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposables
+import io.reactivex.rxkotlin.subscribeBy
+import pl.rmakowiecki.smartalarmcore.AlarmArmingState
 import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
-import pl.rmakowiecki.smartalarmcore.extensions.handle
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
+import pl.rmakowiecki.smartalarmcore.remote.AlarmInteractorContract
 
-class AlarmController(val beamBreakDetector: BeamBreakDetectorPeripheryContract) {
+class AlarmController(
+        val beamBreakDetector: BeamBreakDetectorPeripheryContract,
+        val interactor: AlarmInteractorContract
+) {
 
-    private val disposables = CompositeDisposable()
+    private var alarmArmingDisposable = Disposables.disposed()
+    private var alarmTriggerDisposable = Disposables.disposed()
 
     fun observeAlarm() {
-
+        alarmArmingDisposable = interactor
+                .observeAlarmArmingState()
+                .subscribeBy(
+                        onNext = this::observeTriggerStateIfArmed,
+                        onComplete = {},
+                        onError = {}
+                )
     }
 
-    fun observeBeamBreakDetector() =
-            disposables handle beamBreakDetector
-                    .registerForChanges()
-                    .applyIoSchedulers()
-                    .subscribe {
-                        Log.d(this.javaClass.simpleName, "$it")
-                    }
+    private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) =
+            if (armingState == AlarmArmingState.ARMED) {
+                observeBeamBreakDetector()
+            } else Unit
 
-
-    private fun sendAlarmTriggerData(gpio: Gpio) {
-        FirebaseDatabase
-                .getInstance()
-                .reference
-                .child("trigger")
-                .setValue(gpio.value)
-                .addOnCompleteListener {
-                    Log.d(javaClass.simpleName, if (it.isSuccessful) "Server trigger data push successful" else "Error sending data to server")
+    fun observeBeamBreakDetector() = if (!alarmTriggerDisposable.isDisposed) {
+        alarmTriggerDisposable = beamBreakDetector
+                .registerForChanges()
+                .applyIoSchedulers()
+                .subscribe {
+                    interactor.updateAlarmState(it)
                 }
-    }
-
+    } else Unit
 }

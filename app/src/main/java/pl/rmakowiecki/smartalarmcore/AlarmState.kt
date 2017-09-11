@@ -1,6 +1,6 @@
 package pl.rmakowiecki.smartalarmcore
 
-enum class AlarmTrigger {
+enum class AlarmTriggerState {
     TRIGGERED,
     IDLE;
 
@@ -10,7 +10,7 @@ enum class AlarmTrigger {
     }
 }
 
-enum class ArmingArming {
+enum class AlarmArmingState {
     ARMED,
     DISARMED;
 
@@ -21,11 +21,11 @@ enum class ArmingArming {
 }
 
 fun Boolean.toArmingState() = when (this) {
-    true -> ArmingArming.ARMED
-    false -> ArmingArming.DISARMED
+    true -> AlarmArmingState.ARMED
+    false -> AlarmArmingState.DISARMED
 }
 
 fun Boolean.toTriggerState() = when (this) {
-    true -> AlarmTrigger.TRIGGERED
-    false -> AlarmTrigger.IDLE
+    true -> AlarmTriggerState.TRIGGERED
+    false -> AlarmTriggerState.IDLE
 }

@@ -5,22 +5,22 @@ import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManagerService
 import io.reactivex.subjects.PublishSubject
-import pl.rmakowiecki.smartalarmcore.AlarmTrigger
+import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 
 private const val PIN_NAME = "BCM19"
 
 class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
 
     private lateinit var alarmGpio: Gpio
-    private val statePublisher: PublishSubject<AlarmTrigger> by lazy {
-        PublishSubject.create<AlarmTrigger>().apply {
+    private val statePublisher: PublishSubject<AlarmTriggerState> by lazy {
+        PublishSubject.create<AlarmTriggerState>().apply {
             distinctUntilChanged()
         }
     }
 
     private val gpioStateListener = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio): Boolean {
-            statePublisher.onNext(if (gpio.value) AlarmTrigger.TRIGGERED else AlarmTrigger.IDLE)
+            statePublisher.onNext(if (gpio.value) AlarmTriggerState.TRIGGERED else AlarmTriggerState.IDLE)
             return true
         }
 
@@ -52,7 +52,7 @@ class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
         }
     }
 
-    override fun readValue(): AlarmTrigger = if (alarmGpio.value) AlarmTrigger.TRIGGERED else AlarmTrigger.IDLE
+    override fun readValue(): AlarmTriggerState = if (alarmGpio.value) AlarmTriggerState.TRIGGERED else AlarmTriggerState.IDLE
 
     override fun unregisterFromChanges() {
         statePublisher.onComplete()
