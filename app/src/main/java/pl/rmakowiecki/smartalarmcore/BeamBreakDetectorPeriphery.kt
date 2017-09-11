@@ -2,8 +2,10 @@ import android.util.Log
 import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManagerService
-import io.reactivex.Single
-import pl.rmakowiecki.homepiecore.peripherals.beam_break_detector.BeamBreakDetectorPeripheryContract
+import io.reactivex.Observable
+import pl.rmakowiecki.smartalarmcore.AlarmState
+
+private const val PIN_NAME = "BCM26"
 
 class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
 
@@ -21,28 +23,30 @@ class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
         }
     }
 
-    override fun registerForChanges(): Single<Boolean> {
+    override fun registerForChanges(): Observable<AlarmState> {
         initAndRegisterGpioCallback()
-        return Single.just(false)
+        return Observable.just(AlarmState.IDLE)
     }
 
     private fun initAndRegisterGpioCallback() {
         val service = PeripheralManagerService()
         Log.d(javaClass.simpleName, "Complete GPIO list: " + service.gpioList)
         try {
-            val pinName = "BCM26"
-            alarmGpio = service.openGpio(pinName)
-            alarmGpio.setDirection(Gpio.DIRECTION_IN)
-            alarmGpio.setActiveType(Gpio.ACTIVE_LOW)
-            alarmGpio.setEdgeTriggerType(Gpio.EDGE_BOTH)
-            alarmGpio.registerGpioCallback(gpioStateListener)
+            alarmGpio = service.openGpio(PIN_NAME)
+            alarmGpio.apply {
+                setDirection(Gpio.DIRECTION_IN)
+                setActiveType(Gpio.ACTIVE_LOW)
+                setEdgeTriggerType(Gpio.EDGE_BOTH)
+                registerGpioCallback(gpioStateListener)
+            }
+
         } catch (ex: Exception) {
             ex.printStackTrace()
             Log.d(javaClass.simpleName, "Some exception")
         }
     }
 
-    override fun readValue(): Boolean = alarmGpio.value
+    override fun readValue(): AlarmState = if (alarmGpio.value) AlarmState.TRIGGERED else AlarmState.IDLE
 
     override fun unregisterFromChanges() {
         alarmGpio.unregisterGpioCallback(gpioStateListener)

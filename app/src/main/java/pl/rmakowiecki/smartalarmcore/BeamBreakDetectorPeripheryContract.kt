@@ -1,10 +1,10 @@
-
-import io.reactivex.Single
+import io.reactivex.Observable
+import pl.rmakowiecki.smartalarmcore.AlarmState
 
 interface BeamBreakDetectorPeripheryContract {
-    fun registerForChanges(): Single<Boolean>
+    fun registerForChanges(): Observable<AlarmState>
     fun unregisterFromChanges()
-    fun readValue(): Boolean
+    fun readValue(): AlarmState
 
     companion object {
         fun create() = BeamBreakDetectorPeriphery()
