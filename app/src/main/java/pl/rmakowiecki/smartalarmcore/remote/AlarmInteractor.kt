@@ -6,8 +6,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import io.reactivex.Observable
 import pl.rmakowiecki.smartalarmcore.AlarmTrigger
-import pl.rmakowiecki.smartalarmcore.ArmingState
-import pl.rmakowiecki.smartalarmcore.extensions.toArmingState
+import pl.rmakowiecki.smartalarmcore.ArmingArming
+import pl.rmakowiecki.smartalarmcore.toArmingState
 
 class AlarmInteractor : AlarmInteractorContract {
 
@@ -16,7 +16,7 @@ class AlarmInteractor : AlarmInteractorContract {
             .reference
             .child("active")
 
-    override fun observeAlarmArmingState(): Observable<ArmingState> = Observable.create { emitter ->
+    override fun observeAlarmArmingState(): Observable<ArmingArming> = Observable.create { emitter ->
         val valueListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) = emitter.onNext(dataSnapshot.getArmingState())
 
@@ -29,7 +29,7 @@ class AlarmInteractor : AlarmInteractorContract {
     }
 
     override fun updateAlarmState(alarmState: AlarmTrigger) {
-        databaseNode.setValue(alarmState.value())
+        databaseNode.setValue(alarmState.toBoolean())
                 .addOnCompleteListener { }
     }
 }
