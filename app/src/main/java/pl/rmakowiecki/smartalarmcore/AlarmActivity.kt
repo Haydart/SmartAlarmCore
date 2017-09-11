@@ -6,7 +6,7 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import pl.rmakowiecki.smartalarmcore.peripheral.BeamBreakDetectorPeripheryContract
+import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
 
 class AlarmActivity : AppCompatActivity() {
 
@@ -16,7 +16,7 @@ class AlarmActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         printWifiNetworkStatus()
         alarmController = initSystemController()
-        alarmController.observeBeamBreakDetector()
+        alarmController.observeAlarm()
     }
 
     private fun initSystemController() = AlarmController(BeamBreakDetectorPeripheryContract.create())

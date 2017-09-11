@@ -1,4 +1,4 @@
-package pl.rmakowiecki.smartalarmcore.peripheral
+package pl.rmakowiecki.smartalarmcore.peripheral.camera
 
 import android.content.Context
 import android.hardware.camera2.CameraAccessException
