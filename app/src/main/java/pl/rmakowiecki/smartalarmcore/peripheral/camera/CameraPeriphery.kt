@@ -7,7 +7,9 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
+import pl.rmakowiecki.smartalarmcore.extensions.logD
+import pl.rmakowiecki.smartalarmcore.extensions.logE
+import pl.rmakowiecki.smartalarmcore.extensions.logW
 
 class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
     private var backgroundThread: HandlerThread? = null
@@ -17,24 +19,24 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
 
     private val stateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
-            Log.e(javaClass.simpleName, "onCameraOpened")
+            logD(javaClass.simpleName, "onCameraOpened")
             cameraDevice = camera
         }
 
         override fun onDisconnected(camera: CameraDevice) {
-            Log.d(javaClass.simpleName, "onCameraDisconnected")
+            logW("onCameraDisconnected")
             closeCamera()
         }
 
         override fun onError(camera: CameraDevice, error: Int) {
-            Log.d(javaClass.simpleName, "onCameraError")
+            logE("onCameraError")
             closeCamera()
         }
     }
 
     override fun openCamera() {
         val manager = context?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        Log.e(javaClass.simpleName, "opening camera")
+        logD("opening camera")
         try {
             cameraId = manager.cameraIdList[0]
             val cameraCharacteristics = manager.getCameraCharacteristics(cameraId)

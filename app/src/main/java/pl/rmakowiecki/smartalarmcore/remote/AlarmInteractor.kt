@@ -23,15 +23,15 @@ class AlarmInteractor : AlarmInteractorContract {
             override fun onCancelled(databaseError: DatabaseError?) = emitter.onComplete()
         }
 
-        databaseNode.child("active")
+        databaseNode.child(Nodes.ALARM_ARMING)
                 .addValueEventListener(valueListener)
 
-        emitter.setCancellable { databaseNode.child("active").removeEventListener(valueListener) }
+        emitter.setCancellable { databaseNode.child(Nodes.ALARM_ARMING).removeEventListener(valueListener) }
     }
 
     override fun updateAlarmState(alarmState: AlarmTriggerState) {
         logD("Updating trigger value on server")
-        databaseNode.child("trigger")
+        databaseNode.child(Nodes.ALARM_TRIGGER)
                 .setValue(alarmState.toBoolean())
                 .addOnCompleteListener { }
     }

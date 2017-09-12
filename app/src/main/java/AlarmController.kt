@@ -2,6 +2,7 @@ import io.reactivex.disposables.Disposables
 import io.reactivex.rxkotlin.subscribeBy
 import pl.rmakowiecki.smartalarmcore.AlarmArmingState
 import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
+import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmInteractorContract
 
@@ -22,7 +23,7 @@ class AlarmController(
     }
 
     private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) {
-        print("New alarm arming state $armingState")
+        logD("New alarm arming state $armingState")
         if (armingState == AlarmArmingState.ARMED) {
             observeBeamBreakDetector()
         } else alarmTriggerDisposable.dispose()
