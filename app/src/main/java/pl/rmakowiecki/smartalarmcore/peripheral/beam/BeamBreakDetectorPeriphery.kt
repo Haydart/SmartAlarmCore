@@ -8,20 +8,22 @@ import io.reactivex.subjects.PublishSubject
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.logE
-import pl.rmakowiecki.smartalarmcore.toTriggerState
+import java.util.concurrent.TimeUnit
 
 private const val PIN_NAME = "BCM19"
 
 class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
 
     private lateinit var alarmGpio: Gpio
-    private val statePublisher: PublishSubject<AlarmTriggerState> by lazy {
-        PublishSubject.create<AlarmTriggerState>()
+    private val statePublisher: PublishSubject<Int> by lazy {
+        PublishSubject.create<Int>()
     }
+    private var emittedItemsCount = 0
 
     private val gpioStateListener = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio): Boolean {
-            statePublisher.onNext(gpio.value.toTriggerState())
+            logD(gpio.value, "BEFORE EMITTING ${++emittedItemsCount}")
+            statePublisher.onNext(emittedItemsCount)
             return true
         }
 
@@ -31,10 +33,16 @@ class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
         }
     }
 
-    override fun registerForChanges(): Observable<AlarmTriggerState> {
+    override fun registerForChanges(): Observable<Int> {
         initAndRegisterGpioCallback()
         logD("REGISTERED TO BEAM DETECTOR")
-        return statePublisher.distinctUntilChanged()
+
+        val throttledPublisher = statePublisher.throttleFirst(3, TimeUnit.SECONDS)
+
+        return Observable.merge(
+                throttledPublisher,
+                Observable.interval(1500, TimeUnit.MILLISECONDS).map { -1 }
+        ).distinctUntilChanged()
     }
 
     private fun initAndRegisterGpioCallback() {

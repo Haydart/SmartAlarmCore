@@ -1,6 +1,7 @@
+package pl.rmakowiecki.smartalarmcore
+
 import io.reactivex.disposables.Disposables
 import io.reactivex.rxkotlin.subscribeBy
-import pl.rmakowiecki.smartalarmcore.AlarmArmingState
 import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
@@ -34,7 +35,10 @@ class AlarmController(
                 .registerForChanges()
                 .applyIoSchedulers()
                 .subscribeBy(
-                        onNext = { interactor.updateAlarmState(it) }
+                        onNext = {
+                            logD(it, "AFTER EMITTING")
+//                            interactor.updateAlarmState(it)
+                        }
                 )
     } else Unit
 }

@@ -26,7 +26,9 @@ class AlarmInteractor : AlarmInteractorContract {
         databaseNode.child(Nodes.ALARM_ARMING)
                 .addValueEventListener(valueListener)
 
-        emitter.setCancellable { databaseNode.child(Nodes.ALARM_ARMING).removeEventListener(valueListener) }
+        emitter.setCancellable {
+            databaseNode.child(Nodes.ALARM_ARMING).removeEventListener(valueListener)
+        }
     }
 
     override fun updateAlarmState(alarmState: AlarmTriggerState) {
