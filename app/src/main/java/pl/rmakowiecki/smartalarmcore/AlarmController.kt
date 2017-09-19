@@ -30,15 +30,17 @@ class AlarmController(
         } else alarmTriggerDisposable.dispose()
     }
 
-    private fun observeBeamBreakDetector() = if (alarmTriggerDisposable.isDisposed) {
-        alarmTriggerDisposable = beamBreakDetector
-                .registerForChanges()
-                .applyIoSchedulers()
-                .subscribeBy(
-                        onNext = {
-                            logD(it, "AFTER EMITTING")
-//                            interactor.updateAlarmState(it)
-                        }
-                )
-    } else Unit
+    private fun observeBeamBreakDetector() {
+        if (alarmTriggerDisposable.isDisposed) {
+            alarmTriggerDisposable = beamBreakDetector
+                    .registerForChanges()
+                    .applyIoSchedulers()
+                    .subscribeBy(
+                            onNext = this::updateTriggerState
+                    )
+        }
+    }
+
+    private fun updateTriggerState(alarmTriggerState: AlarmTriggerState)
+            = interactor.updateAlarmState(alarmTriggerState)
 }

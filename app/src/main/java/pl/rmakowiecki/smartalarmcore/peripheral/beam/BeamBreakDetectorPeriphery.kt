@@ -8,22 +8,23 @@ import io.reactivex.subjects.PublishSubject
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.logE
+import pl.rmakowiecki.smartalarmcore.toTriggerState
 import java.util.concurrent.TimeUnit
 
 private const val PIN_NAME = "BCM19"
+private const val THROTTLED_PERIPHERY_INTERVAL_MILLIS = 5000L
+private const val ALARM_TURN_OFF_SIGNAL_INTERVAL_MILLIS = 2500L
 
 class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
 
     private lateinit var alarmGpio: Gpio
-    private val statePublisher: PublishSubject<Int> by lazy {
-        PublishSubject.create<Int>()
+    private val statePublisher: PublishSubject<AlarmTriggerState> by lazy {
+        PublishSubject.create<AlarmTriggerState>()
     }
-    private var emittedItemsCount = 0
 
     private val gpioStateListener = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio): Boolean {
-            logD(gpio.value, "BEFORE EMITTING ${++emittedItemsCount}")
-            statePublisher.onNext(emittedItemsCount)
+            statePublisher.onNext(gpio.value.toTriggerState())
             return true
         }
 
@@ -33,15 +34,13 @@ class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
         }
     }
 
-    override fun registerForChanges(): Observable<Int> {
+    override fun registerForChanges(): Observable<AlarmTriggerState> {
         initAndRegisterGpioCallback()
         logD("REGISTERED TO BEAM DETECTOR")
 
-        val throttledPublisher = statePublisher.throttleFirst(3, TimeUnit.SECONDS)
-
         return Observable.merge(
-                throttledPublisher,
-                Observable.interval(1500, TimeUnit.MILLISECONDS).map { -1 }
+                statePublisher.throttleFirst(THROTTLED_PERIPHERY_INTERVAL_MILLIS, TimeUnit.MILLISECONDS),
+                Observable.interval(ALARM_TURN_OFF_SIGNAL_INTERVAL_MILLIS, TimeUnit.MILLISECONDS).map { AlarmTriggerState.IDLE }
         ).distinctUntilChanged()
     }
 
