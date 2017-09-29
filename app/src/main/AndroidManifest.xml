@@ -23,18 +23,6 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-
-        <!--<receiver android:name=".background.UsbStateBroadcastReceiver">
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_STATE" />
-            </intent-filter>
-        </receiver>-->
     </application>
 
 </manifest>
