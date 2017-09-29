@@ -1,12 +1,10 @@
 package pl.rmakowiecki.smartalarmcore
 
 import android.content.Context
-import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import pl.rmakowiecki.smartalarmcore.background.UsbStateBroadcastReceiver
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
@@ -14,15 +12,9 @@ import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 class AlarmActivity : AppCompatActivity() {
 
     private lateinit var alarmController: AlarmController
-    val usbReceiver = UsbStateBroadcastReceiver(onAttach, onDetach)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        registerReceiver(usbReceiver, IntentFilter().apply {
-            addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED")
-            addAction("android.hardware.usb.action.USB_DEVICE_DETACHED")
-        })
 
         printWifiNetworkStatus()
         alarmController = initSystemController()
@@ -45,7 +37,6 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        unregisterReceiver(usbReceiver)
         alarmController.onAppDestroy()
         super.onDestroy()
     }
