@@ -3,19 +3,34 @@ package pl.rmakowiecki.smartalarmcore
 import io.reactivex.disposables.Disposables
 import io.reactivex.rxkotlin.subscribeBy
 import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
-import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
-import pl.rmakowiecki.smartalarmcore.remote.AlarmInteractorContract
+import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
+import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmController(
         val beamBreakDetector: BeamBreakDetectorPeripheryContract,
-        val interactor: AlarmInteractorContract) {
+        val backendInteractor: AlarmBackendContract,
+        val usbSetupProviderContract: UsbSetupProviderContract
+) {
 
     private var alarmArmingDisposable = Disposables.disposed()
     private var alarmTriggerDisposable = Disposables.disposed()
+    private var backendConnectionDisposable = Disposables.disposed()
+
+    init {
+        connectToBackend()
+        usbSetupProviderContract.registerBroadcastListener()
+    }
+
+    private fun connectToBackend() {
+        backendConnectionDisposable = backendInteractor
+                .signInToBackend()
+                .applyIoSchedulers()
+                .subscribe()
+    }
 
     fun observeAlarm() {
-        alarmArmingDisposable = interactor
+        alarmArmingDisposable = backendInteractor
                 .observeAlarmArmingState()
                 .applyIoSchedulers()
                 .subscribeBy(
@@ -23,11 +38,9 @@ class AlarmController(
                 )
     }
 
-    private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) {
-        logD("New alarm arming state $armingState")
-        if (armingState == AlarmArmingState.ARMED) {
-            observeBeamBreakDetector()
-        } else alarmTriggerDisposable.dispose()
+    private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) = when (armingState) {
+        AlarmArmingState.ARMED -> observeBeamBreakDetector()
+        else -> alarmTriggerDisposable.dispose()
     }
 
     private fun observeBeamBreakDetector() {
@@ -42,5 +55,12 @@ class AlarmController(
     }
 
     private fun updateTriggerState(alarmTriggerState: AlarmTriggerState)
-            = interactor.updateAlarmState(alarmTriggerState)
+            = backendInteractor.updateAlarmState(alarmTriggerState)
+
+    fun onAppDestroy() {
+        alarmArmingDisposable.dispose()
+        alarmTriggerDisposable.dispose()
+        backendConnectionDisposable.dispose()
+        usbSetupProviderContract.unregisterBroadcastListener()
+    }
 }

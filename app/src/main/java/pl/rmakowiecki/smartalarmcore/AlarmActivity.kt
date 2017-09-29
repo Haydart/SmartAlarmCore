@@ -8,7 +8,8 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import pl.rmakowiecki.smartalarmcore.background.UsbStateBroadcastReceiver
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
-import pl.rmakowiecki.smartalarmcore.remote.AlarmInteractorContract
+import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
+import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmActivity : AppCompatActivity() {
 
@@ -30,7 +31,8 @@ class AlarmActivity : AppCompatActivity() {
 
     private fun initSystemController() = AlarmController(
             BeamBreakDetectorPeripheryContract.create(),
-            AlarmInteractorContract.create()
+            AlarmBackendContract.create(),
+            UsbSetupProviderContract.create()
     )
 
     private fun printWifiNetworkStatus() {
@@ -43,7 +45,8 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         unregisterReceiver(usbReceiver)
+        alarmController.onAppDestroy()
+        super.onDestroy()
     }
 }
