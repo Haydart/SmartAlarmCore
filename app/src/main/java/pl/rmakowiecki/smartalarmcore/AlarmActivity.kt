@@ -14,7 +14,7 @@ import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 class AlarmActivity : AppCompatActivity() {
 
     private lateinit var alarmController: AlarmController
-    val usbReceiver = UsbStateBroadcastReceiver()
+    val usbReceiver = UsbStateBroadcastReceiver(onAttach, onDetach)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

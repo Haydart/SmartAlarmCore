@@ -6,9 +6,12 @@ import pl.rmakowiecki.smartalarmcore.background.UsbStateBroadcastReceiver
 
 class UsbSetupProvider(private val activity: AppCompatActivity) : UsbSetupProviderContract {
 
-    private val usbReceiver = UsbStateBroadcastReceiver()
+    private lateinit var usbReceiver: UsbStateBroadcastReceiver
 
-    override fun registerBroadcastListener() {
+    override fun registerBroadcastListener(onAttach: () -> Unit, onDetach: () -> Unit) {
+
+        usbReceiver = UsbStateBroadcastReceiver(onAttach, onDetach)
+
         activity.registerReceiver(usbReceiver, IntentFilter().apply {
             addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED")
             addAction("android.hardware.usb.action.USB_DEVICE_DETACHED")
@@ -17,3 +20,5 @@ class UsbSetupProvider(private val activity: AppCompatActivity) : UsbSetupProvid
 
     override fun unregisterBroadcastListener() = activity.unregisterReceiver(usbReceiver)
 }
+
+class UsbDeviceModel()
