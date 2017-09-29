@@ -19,17 +19,19 @@ class AlarmController(
 
     init {
         connectToBackend()
-        usbSetupProviderContract.registerBroadcastListener()
+        usbSetupProviderContract.registerBroadcastListener({ }, { })
     }
 
     private fun connectToBackend() {
         backendConnectionDisposable = backendInteractor
                 .signInToBackend()
                 .applyIoSchedulers()
-                .subscribe()
+                .subscribeBy(
+                        onSuccess = { observeAlarm() }
+                )
     }
 
-    fun observeAlarm() {
+    private fun observeAlarm() {
         alarmArmingDisposable = backendInteractor
                 .observeAlarmArmingState()
                 .applyIoSchedulers()

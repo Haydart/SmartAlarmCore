@@ -2,6 +2,7 @@ package pl.rmakowiecki.smartalarmcore.remote
 
 import io.reactivex.Observable
 import io.reactivex.Single
+import pl.rmakowiecki.smartalarmcore.AlarmActivity
 import pl.rmakowiecki.smartalarmcore.AlarmArmingState
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 
@@ -12,7 +13,7 @@ interface AlarmBackendContract {
     fun updateAlarmState(alarmState: AlarmTriggerState)
 
     companion object {
-        fun create() = AlarmBackendInteractor()
+        fun create(activity: AlarmActivity) = AlarmBackendInteractor(activity)
     }
 }
 
