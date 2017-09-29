@@ -24,7 +24,7 @@ class AlarmActivity : AppCompatActivity() {
     private fun initSystemController() = AlarmController(
             BeamBreakDetectorPeripheryContract.create(),
             AlarmBackendContract.create(),
-            UsbSetupProviderContract.create()
+            UsbSetupProviderContract.create(this)
     )
 
     private fun printWifiNetworkStatus() {
