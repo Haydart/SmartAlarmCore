@@ -87,10 +87,6 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
 
     private fun triggerImageCapture() {
         try {
-            imageReadProcessor = ImageReader.newInstance(1280, 768,
-                    ImageFormat.JPEG, 10)
-            imageReadProcessor?.setOnImageAvailableListener(imageAvailabilityListener, backgroundHandler)
-
             val captureBuilder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
             captureBuilder?.addTarget(imageReadProcessor?.surface)
             captureBuilder?.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
@@ -127,6 +123,9 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
         }
 
         try {
+            imageReadProcessor = ImageReader.newInstance(1280, 768,
+                    ImageFormat.JPEG, 1)
+            imageReadProcessor?.setOnImageAvailableListener(imageAvailabilityListener, backgroundHandler)
             cameraDevice?.createCaptureSession(Collections.singletonList(imageReadProcessor?.surface), cameraSessionCallback, null)
         } catch (cameraAccessException: CameraAccessException) {
             printStackTrace(cameraAccessException)

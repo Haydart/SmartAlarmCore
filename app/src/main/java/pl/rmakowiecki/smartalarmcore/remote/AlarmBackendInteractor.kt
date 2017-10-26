@@ -17,10 +17,10 @@ import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
 import pl.rmakowiecki.smartalarmcore.toArmingState
+import java.util.*
 
-private const val USERS_DIRECTORY = "users"
+private const val CORE_DEVICE_DIRECTORY = "core_assets"
 private const val IMAGES_DIRECTORY = "images"
-private const val DIRECT_FILE_PATH = "profilepic.jpg"
 
 class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackendContract {
 
@@ -87,12 +87,13 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
                 .addOnCompleteListener { }
     }
 
-    override fun uploadPhoto(photo: ByteArray): Single<Boolean> {
-        storageNode.getReferenceFromUrl(STORAGE_URL)
-                .child(USERS_DIRECTORY)
-                .child(FirebaseUserReloader.reloadCurrentUser(firebaseAuth).getUid())
+    override fun uploadPhoto(photoBytes: ByteArray): Single<Boolean> = Single.create { emitter ->
+        storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
-                .child(DIRECT_FILE_PATH)
+                .child(getCurrentBackendUser()?.uid ?: "leaked_photos")
+                .child("alarm_photo_${Calendar.getInstance().timeInMillis}.jpg")
+                .putBytes(photoBytes)
+                .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
     }
 }
 
