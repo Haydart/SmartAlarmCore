@@ -25,6 +25,7 @@ class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
     private val gpioStateListener = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio): Boolean {
             statePublisher.onNext(gpio.value.toTriggerState())
+            logD("GPIO 19 state changed to: ${gpio.value}")
             return true
         }
 

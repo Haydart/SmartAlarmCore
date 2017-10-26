@@ -3,6 +3,7 @@
     package="pl.rmakowiecki.smartalarmcore">
 
     <uses-library android:name="com.google.android.things" />
+    <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
         android:allowBackup="true"

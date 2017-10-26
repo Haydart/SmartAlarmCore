@@ -2,15 +2,19 @@ package pl.rmakowiecki.smartalarmcore
 
 import io.reactivex.disposables.Disposables
 import io.reactivex.rxkotlin.subscribeBy
+import pl.rmakowiecki.smartalarmcore.AlarmTriggerState.TRIGGERED
 import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
+import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
+import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmController(
-        val beamBreakDetector: BeamBreakDetectorPeripheryContract,
-        val backendInteractor: AlarmBackendContract,
-        val usbSetupProviderContract: UsbSetupProviderContract
+        private val beamBreakDetector: BeamBreakDetectorPeripheryContract,
+        private val camera: CameraPeripheryContract,
+        private val backendInteractor: AlarmBackendContract,
+        private val usbSetupProvider: UsbSetupProviderContract
 ) {
 
     private var alarmArmingDisposable = Disposables.disposed()
@@ -18,8 +22,9 @@ class AlarmController(
     private var backendConnectionDisposable = Disposables.disposed()
 
     init {
+        camera.openCamera()
         connectToBackend()
-        usbSetupProviderContract.registerBroadcastListener({ }, { })
+        usbSetupProvider.registerBroadcastListener({ }, { })
     }
 
     private fun connectToBackend() {
@@ -51,9 +56,22 @@ class AlarmController(
                     .registerForChanges()
                     .applyIoSchedulers()
                     .subscribeBy(
-                            onNext = this::updateTriggerState
+                            onNext = {
+                                updateTriggerState(it)
+                                if (it == TRIGGERED) {
+                                    capturePhoto()
+                                }
+                            }
                     )
         }
+    }
+
+    private fun capturePhoto() {
+        camera.capturePhoto()
+                .flatMapSingle(backendInteractor::uploadPhoto)
+                .subscribeBy(
+                        onNext = { logD("Photo upload success? $it") }
+                )
     }
 
     private fun updateTriggerState(alarmTriggerState: AlarmTriggerState)
@@ -63,6 +81,6 @@ class AlarmController(
         alarmArmingDisposable.dispose()
         alarmTriggerDisposable.dispose()
         backendConnectionDisposable.dispose()
-        usbSetupProviderContract.unregisterBroadcastListener()
+        usbSetupProvider.unregisterBroadcastListener()
     }
 }
