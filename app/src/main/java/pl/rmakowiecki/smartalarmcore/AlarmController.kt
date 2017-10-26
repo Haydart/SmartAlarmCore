@@ -20,6 +20,7 @@ class AlarmController(
     private var alarmArmingDisposable = Disposables.disposed()
     private var alarmTriggerDisposable = Disposables.disposed()
     private var backendConnectionDisposable = Disposables.disposed()
+    private var cameraPhotoSessionDisposable = Disposables.disposed()
 
     init {
         camera.openCamera()
@@ -67,7 +68,7 @@ class AlarmController(
     }
 
     private fun capturePhoto() {
-        camera.capturePhoto()
+        cameraPhotoSessionDisposable = camera.capturePhoto()
                 .flatMapSingle(backendInteractor::uploadPhoto)
                 .subscribeBy(
                         onNext = { logD("Photo upload success? $it") }
@@ -81,6 +82,7 @@ class AlarmController(
         alarmArmingDisposable.dispose()
         alarmTriggerDisposable.dispose()
         backendConnectionDisposable.dispose()
+        cameraPhotoSessionDisposable.dispose()
         usbSetupProvider.unregisterBroadcastListener()
     }
 }
