@@ -6,7 +6,6 @@ import android.hardware.camera2.*
 import android.media.ImageReader
 import android.media.ImageReader.OnImageAvailableListener
 import android.os.Handler
-import android.os.HandlerThread
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import pl.rmakowiecki.smartalarmcore.extensions.logD
@@ -17,7 +16,6 @@ import java.util.*
 
 class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
 
-    private var backgroundThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
     private var cameraDevice: CameraDevice? = null
     private var cameraCaptureSession: CameraCaptureSession? = null
