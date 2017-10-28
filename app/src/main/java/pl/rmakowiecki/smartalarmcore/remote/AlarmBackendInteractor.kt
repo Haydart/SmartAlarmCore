@@ -90,7 +90,7 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
     override fun uploadPhoto(photoBytes: ByteArray): Single<Boolean> = Single.create { emitter ->
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
-                .child(getCurrentBackendUser()?.uid ?: "leaked_photos")
+                .child(getCurrentBackendUser()?.uid ?: "non_assignable_photos")
                 .child("alarm_photo_${Calendar.getInstance().timeInMillis}.jpg")
                 .putBytes(photoBytes)
                 .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
