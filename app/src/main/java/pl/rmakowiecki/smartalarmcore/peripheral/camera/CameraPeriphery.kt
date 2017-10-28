@@ -14,6 +14,10 @@ import pl.rmakowiecki.smartalarmcore.extensions.logW
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
 import java.util.*
 
+private const val PHOTO_WIDTH = 1280
+private const val PHOTO_HEIGHT = 768
+private const val PHOTO_MAX_COUNT = 1
+
 class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
 
     private var backgroundHandler: Handler? = null
@@ -121,8 +125,7 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
         }
 
         try {
-            imageReadProcessor = ImageReader.newInstance(1280, 768,
-                    ImageFormat.JPEG, 1)
+            imageReadProcessor = ImageReader.newInstance(PHOTO_WIDTH, PHOTO_HEIGHT, ImageFormat.JPEG, PHOTO_MAX_COUNT)
             imageReadProcessor?.setOnImageAvailableListener(imageAvailabilityListener, backgroundHandler)
             cameraDevice?.createCaptureSession(Collections.singletonList(imageReadProcessor?.surface), cameraSessionCallback, null)
         } catch (cameraAccessException: CameraAccessException) {

@@ -70,6 +70,7 @@ class AlarmController(
     private fun capturePhoto() {
         cameraPhotoSessionDisposable = camera.capturePhoto()
                 .flatMapSingle(backendInteractor::uploadPhoto)
+                .applyIoSchedulers()
                 .subscribeBy(
                         onNext = { logD("Photo upload success? $it") }
                 )
