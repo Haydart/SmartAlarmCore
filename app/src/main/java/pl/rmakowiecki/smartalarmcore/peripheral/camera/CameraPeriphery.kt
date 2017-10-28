@@ -105,8 +105,6 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
         logD("opening camera")
         try {
             cameraId = manager.cameraIdList[0]
-            val cameraCharacteristics = manager.getCameraCharacteristics(cameraId)
-            val streamConfigurationMap = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
             manager.openCamera(cameraId, cameraStateCallback, null)
         } catch (ex: CameraAccessException) {
             ex.printStackTrace()
