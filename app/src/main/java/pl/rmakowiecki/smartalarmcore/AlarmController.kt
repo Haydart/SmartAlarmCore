@@ -75,12 +75,13 @@ class AlarmController(
     private fun reportBeamBreakIncident() {
         val reportTimestamp = System.currentTimeMillis()
 
-        cameraPhotoSessionDisposable = camera.capturePhoto()
-                .flatMapSingle { backendInteractor.uploadIncidentPhoto(it, reportTimestamp) }
-                .flatMapSingle {
-                    backendInteractor.reportSecurityIncident(
-                            SecurityIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR, reportTimestamp)
-                    )
+        backendInteractor
+                .reportSecurityIncident(SecurityIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR, reportTimestamp))
+                .flatMapObservable { incidentModel ->
+                    camera.capturePhoto()
+                            .flatMapSingle { photo ->
+                                backendInteractor.uploadIncidentPhoto(photo, incidentModel.generatedId)
+                            }
                 }.applyIoSchedulers()
                 .subscribeBy(
                         onNext = { logD("Security incident report successful? $it") }

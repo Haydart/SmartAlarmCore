@@ -91,19 +91,25 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
                 .addOnCompleteListener { }
     }
 
-    override fun reportSecurityIncident(securityIncident: SecurityIncident): Single<Boolean> = Single.create { emitter ->
-        databaseNode.child(getCurrentBackendUser()?.uid)
+    override fun reportSecurityIncident(securityIncident: SecurityIncident): Single<SecurityIncidentResponse> = Single.create { emitter ->
+        val securityIncidentNodeReference = databaseNode.child(getCurrentBackendUser()?.uid)
                 .child(Nodes.INCIDENTS)
                 .push()
+
+        securityIncidentNodeReference
                 .setValue(RemoteSecurityIncident.from(securityIncident))
-                .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
+                .addOnCompleteListener {
+                    emitter.onSuccess(
+                            SecurityIncidentResponse(it.isSuccessful, securityIncidentNodeReference.key)
+                    )
+                }
     }
 
-    override fun uploadIncidentPhoto(photoBytes: ByteArray, reportTimestamp: Long): Single<Boolean> = Single.create { emitter ->
+    override fun uploadIncidentPhoto(photoBytes: ByteArray, uniqueIncidentId: String): Single<Boolean> = Single.create { emitter ->
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
                 .child(getCurrentBackendUser()?.uid ?: "non_assignable_incidents")
-                .child("$reportTimestamp.jpg")
+                .child("$uniqueIncidentId.jpg")
                 .putBytes(photoBytes)
                 .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
     }
@@ -111,4 +117,12 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
 private fun DataSnapshot.getArmingState() = (this.value as Boolean).toArmingState()
 
-class RemoteAlarmStateModel(val active: Boolean, val triggered: Boolean)
+class RemoteAlarmStateModel(
+        val active: Boolean,
+        val triggered: Boolean
+)
+
+class SecurityIncidentResponse(
+        val isSuccessful: Boolean,
+        val generatedId: String
+)

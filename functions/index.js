@@ -78,6 +78,11 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
   const tempLocalDir = path.dirname(tempLocalFile);
   const tempLocalThumbFile = path.join(os.tmpdir(), thumbFilePath);
 
+  const pathParts = fileDir.split('/')
+
+  const coreDeviceUid = pathParts[pathParts.length - 1]
+  const incidentUid = fileName.slice(0, -4);
+
   // Exit if this is triggered on a file that is not an image.
   if (!event.data.contentType.startsWith('image/')) {
     console.log('This is not an image.');
@@ -139,7 +144,7 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
     const originalResult = results[1];
     const thumbFileUrl = thumbResult[0];
     const fileUrl = originalResult[0];
-    // Add the URLs to the Database
-    return admin.database().ref('images').push({path: fileUrl, thumbnail: thumbFileUrl});
+
+    return admin.database().ref(`/${coreDeviceUid}/incidents/${incidentUid}/thumbnailUrl`).set(thumbFileUrl);
   }).then(() => console.log('Thumbnail URLs saved to database.'));
 });
