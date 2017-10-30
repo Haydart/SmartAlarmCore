@@ -16,11 +16,13 @@ import pl.rmakowiecki.smartalarmcore.AlarmArmingState
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_ARMING
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_STATE
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_TRIGGER
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.CORE_DEVICE_DIRECTORY
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.IMAGES_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.toArmingState
 import java.util.*
-
-private const val CORE_DEVICE_DIRECTORY = "core_assets"
-private const val IMAGES_DIRECTORY = "images"
 
 class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackendContract {
 
@@ -54,6 +56,7 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
     private fun initializeCoreDeviceNoSqlModel(emitter: SingleEmitter<Boolean>) = databaseNode
             .child(getCurrentBackendUser()?.uid)
+            .child(ALARM_STATE)
             .setValue(RemoteAlarmStateModel(true, false))
             .addOnSuccessListener { emitter.onSuccess(true) }
 
@@ -71,7 +74,8 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
         val alarmArmingNode = databaseNode
                 .child(getCurrentBackendUser()?.uid)
-                .child(Nodes.ALARM_ARMING)
+                .child(ALARM_STATE)
+                .child(ALARM_ARMING)
 
         alarmArmingNode.addValueEventListener(valueListener)
 
@@ -82,15 +86,24 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
     override fun updateAlarmState(alarmState: AlarmTriggerState) {
         databaseNode.child(getCurrentBackendUser()?.uid)
-                .child(Nodes.ALARM_TRIGGER)
+                .child(ALARM_STATE)
+                .child(ALARM_TRIGGER)
                 .setValue(alarmState.toBoolean())
                 .addOnCompleteListener { }
     }
 
-    override fun uploadPhoto(photoBytes: ByteArray): Single<Boolean> = Single.create { emitter ->
+    override fun reportSecurityIncident(securityIncident: SecurityIncident): Single<Boolean> = Single.create { emitter ->
+        databaseNode.child(getCurrentBackendUser()?.uid)
+                .child(Nodes.INCIDENTS)
+                .push()
+                .setValue(RemoteSecurityIncident.from(securityIncident))
+                .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
+    }
+
+    override fun uploadIncidentPhoto(photoBytes: ByteArray, reportTimestamp: Long): Single<Boolean> = Single.create { emitter ->
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
-                .child(getCurrentBackendUser()?.uid ?: "non_assignable_photos")
+                .child(getCurrentBackendUser()?.uid ?: "non_assignable_incidents")
                 .child("alarm_photo_${Calendar.getInstance().timeInMillis}.jpg")
                 .putBytes(photoBytes)
                 .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }

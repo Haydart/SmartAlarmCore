@@ -11,10 +11,11 @@ interface AlarmBackendContract {
     fun signInToBackend(): Single<Boolean>
     fun observeAlarmArmingState(): Observable<AlarmArmingState>
     fun updateAlarmState(alarmState: AlarmTriggerState)
-    fun uploadPhoto(photoBytes: ByteArray): Single<Boolean>
+    fun reportSecurityIncident(securityIncident: SecurityIncident): Single<Boolean>
+    fun uploadIncidentPhoto(photoBytes: ByteArray, reportTimestamp: Long): Single<Boolean>
 
     companion object {
         fun create(activity: AlarmActivity) = AlarmBackendInteractor(activity)
     }
-}
 
+}

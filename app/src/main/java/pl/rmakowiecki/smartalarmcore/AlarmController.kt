@@ -8,6 +8,8 @@ import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
+import pl.rmakowiecki.smartalarmcore.remote.AlarmTriggerReason
+import pl.rmakowiecki.smartalarmcore.remote.SecurityIncident
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmController(
@@ -58,26 +60,32 @@ class AlarmController(
                     .applyIoSchedulers()
                     .subscribeBy(
                             onNext = {
-                                updateTriggerState(it)
+                                updateAlarmTriggerState(it)
                                 if (it == TRIGGERED) {
-                                    capturePhoto()
+                                    reportBeamBreakIncident()
                                 }
                             }
                     )
         }
     }
 
-    private fun capturePhoto() {
+    private fun updateAlarmTriggerState(alarmTriggerState: AlarmTriggerState)
+            = backendInteractor.updateAlarmState(alarmTriggerState)
+
+    private fun reportBeamBreakIncident() {
+        val reportTimestamp = System.currentTimeMillis()
+
         cameraPhotoSessionDisposable = camera.capturePhoto()
-                .flatMapSingle(backendInteractor::uploadPhoto)
-                .applyIoSchedulers()
+                .flatMapSingle { backendInteractor.uploadIncidentPhoto(it, reportTimestamp) }
+                .flatMapSingle {
+                    backendInteractor.reportSecurityIncident(
+                            SecurityIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR, reportTimestamp)
+                    )
+                }.applyIoSchedulers()
                 .subscribeBy(
-                        onNext = { logD("Photo upload success? $it") }
+                        onNext = { logD("Security incident report successful? $it") }
                 )
     }
-
-    private fun updateTriggerState(alarmTriggerState: AlarmTriggerState)
-            = backendInteractor.updateAlarmState(alarmTriggerState)
 
     fun onAppDestroy() {
         alarmArmingDisposable.dispose()
