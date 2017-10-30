@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase)
 
-exports.sendAlarmNotification = functions.database.ref('/{currentCoreDeviceUid}/triggered').onWrite(event => {
+exports.sendAlarmNotification = functions.database.ref('/{currentCoreDeviceUid}/state/triggered').onWrite(event => {
     const data = event.data;
     const coreUid = event.params.currentCoreDeviceUid
 
@@ -68,7 +68,7 @@ const THUMB_MAX_HEIGHT = 256;
 const THUMB_MAX_WIDTH = 256;
 const THUMB_PREFIX = 'thumb_';
 
-exports.generateThumbnail = functions.storage.bucket('images').object().onChange(event => {
+exports.generateThumbnail = functions.storage.object().onChange(event => {
   // File and directory paths.
   const filePath = event.data.name;
   const fileDir = path.dirname(filePath);
@@ -85,7 +85,7 @@ exports.generateThumbnail = functions.storage.bucket('images').object().onChange
   }
 
   // Exit is this isn't a new file, when only metadata changed
-  if (resourceState === 'exists' && metageneration > 1) {
+  if (event.data.resourceState === 'exists' && event.data.metageneration > 1) {
     console.log('This is a metadata change event.');
     return;
   }

@@ -22,7 +22,6 @@ import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_TRIGGER
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.CORE_DEVICE_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.IMAGES_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.toArmingState
-import java.util.*
 
 class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackendContract {
 
@@ -104,7 +103,7 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
                 .child(getCurrentBackendUser()?.uid ?: "non_assignable_incidents")
-                .child("alarm_photo_${Calendar.getInstance().timeInMillis}.jpg")
+                .child("$reportTimestamp.jpg")
                 .putBytes(photoBytes)
                 .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
     }
