@@ -5,7 +5,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState.TRIGGERED
 import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
 import pl.rmakowiecki.smartalarmcore.extensions.logD
-import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
+import pl.rmakowiecki.smartalarmcore.peripheral.AlarmTriggerPeripheralDevice
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmTriggerReason
@@ -13,13 +13,15 @@ import pl.rmakowiecki.smartalarmcore.remote.SecurityIncident
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmController(
-        private val beamBreakDetector: BeamBreakDetectorPeripheryContract,
+        private val beamBreakDetector: AlarmTriggerPeripheralDevice,
+        private val motionSensor: AlarmTriggerPeripheralDevice,
         private val camera: CameraPeripheryContract,
         private val backendInteractor: AlarmBackendContract,
         private val usbSetupProvider: UsbSetupProviderContract
 ) {
 
-    private var alarmArmingDisposable = Disposables.disposed()
+    private var beamBreakDetectorDisposable = Disposables.disposed()
+    private var motionSensorDisposable = Disposables.disposed()
     private var alarmTriggerDisposable = Disposables.disposed()
     private var backendConnectionDisposable = Disposables.disposed()
     private var cameraPhotoSessionDisposable = Disposables.disposed()
@@ -40,7 +42,7 @@ class AlarmController(
     }
 
     private fun observeAlarm() {
-        alarmArmingDisposable = backendInteractor
+        alarmTriggerDisposable = backendInteractor
                 .observeAlarmArmingState()
                 .applyIoSchedulers()
                 .subscribeBy(
@@ -49,13 +51,19 @@ class AlarmController(
     }
 
     private fun observeTriggerStateIfArmed(armingState: AlarmArmingState) = when (armingState) {
-        AlarmArmingState.ARMED -> observeBeamBreakDetector()
-        else -> alarmTriggerDisposable.dispose()
+        AlarmArmingState.ARMED -> {
+            observeBeamBreakDetector()
+            observeMotionSensor()
+        }
+        else -> {
+            beamBreakDetectorDisposable.dispose()
+            motionSensorDisposable.dispose()
+        }
     }
 
     private fun observeBeamBreakDetector() {
-        if (alarmTriggerDisposable.isDisposed) {
-            alarmTriggerDisposable = beamBreakDetector
+        if (beamBreakDetectorDisposable.isDisposed) {
+            beamBreakDetectorDisposable = beamBreakDetector
                     .registerForChanges()
                     .applyIoSchedulers()
                     .subscribeBy(
@@ -65,6 +73,17 @@ class AlarmController(
                                     reportBeamBreakIncident()
                                 }
                             }
+                    )
+        }
+    }
+
+    private fun observeMotionSensor() {
+        if (motionSensorDisposable.isDisposed) {
+            motionSensorDisposable = motionSensor
+                    .registerForChanges()
+                    .applyIoSchedulers()
+                    .subscribeBy(
+                            onNext = { /*logD(it)*/ }
                     )
         }
     }
@@ -89,7 +108,8 @@ class AlarmController(
     }
 
     fun onAppDestroy() {
-        alarmArmingDisposable.dispose()
+        beamBreakDetectorDisposable.dispose()
+        motionSensorDisposable.dispose()
         alarmTriggerDisposable.dispose()
         backendConnectionDisposable.dispose()
         cameraPhotoSessionDisposable.dispose()

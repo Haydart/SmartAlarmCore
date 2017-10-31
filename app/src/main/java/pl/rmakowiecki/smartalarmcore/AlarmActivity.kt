@@ -5,8 +5,9 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeripheryContract
+import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeriphery
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
+import pl.rmakowiecki.smartalarmcore.peripheral.motion.MotionSensorPeriphery
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
@@ -21,7 +22,8 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     private fun initSystemController() = AlarmController(
-            BeamBreakDetectorPeripheryContract.create(),
+            BeamBreakDetectorPeriphery(),
+            MotionSensorPeriphery(),
             CameraPeripheryContract.create(this),
             AlarmBackendContract.create(this),
             UsbSetupProviderContract.create(this)

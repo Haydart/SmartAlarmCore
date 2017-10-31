@@ -8,6 +8,7 @@ import io.reactivex.subjects.PublishSubject
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.logE
+import pl.rmakowiecki.smartalarmcore.peripheral.AlarmTriggerPeripheralDevice
 import pl.rmakowiecki.smartalarmcore.toTriggerState
 import java.util.concurrent.TimeUnit
 
@@ -15,7 +16,7 @@ private const val PIN_NAME = "BCM19"
 private const val THROTTLED_PERIPHERY_INTERVAL_MILLIS = 5000L
 private const val ALARM_TURN_OFF_SIGNAL_INTERVAL_MILLIS = 2500L
 
-class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
+class BeamBreakDetectorPeriphery : AlarmTriggerPeripheralDevice {
 
     private lateinit var alarmGpio: Gpio
     private val statePublisher: PublishSubject<AlarmTriggerState> by lazy {
@@ -25,7 +26,7 @@ class BeamBreakDetectorPeriphery : BeamBreakDetectorPeripheryContract {
     private val gpioStateListener = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio): Boolean {
             statePublisher.onNext(gpio.value.toTriggerState())
-            logD("GPIO 19 state changed to: ${gpio.value}")
+//            logD("GPIO 19 state changed to: ${gpio.value}")
             return true
         }
 

@@ -1,3 +1,5 @@
+package pl.rmakowiecki.smartalarmcore.peripheral.motion
+
 import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManagerService
@@ -6,11 +8,12 @@ import io.reactivex.subjects.PublishSubject
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.logE
+import pl.rmakowiecki.smartalarmcore.peripheral.AlarmTriggerPeripheralDevice
 import pl.rmakowiecki.smartalarmcore.toTriggerState
 
-private const val PIN_NAME = "BCM26"
+private const val PIN_NAME = "BCM20"
 
-class AlarmMotionSensorPeriphery : AlarmMotionSensorPeripheryContract {
+class MotionSensorPeriphery : AlarmTriggerPeripheralDevice {
 
     private lateinit var alarmGpio: Gpio
     private val statePublisher: PublishSubject<AlarmTriggerState> by lazy {
@@ -19,8 +22,8 @@ class AlarmMotionSensorPeriphery : AlarmMotionSensorPeripheryContract {
 
     private val gpioStateListener = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio): Boolean {
+            logD("Motion sensor triggered? ${gpio.value}")
             statePublisher.onNext(gpio.value.toTriggerState())
-            logD("GPIO 19 state changed to: ${gpio.value}")
             return true
         }
 
@@ -44,7 +47,7 @@ class AlarmMotionSensorPeriphery : AlarmMotionSensorPeripheryContract {
             alarmGpio = service.openGpio(PIN_NAME)
             alarmGpio.apply {
                 setDirection(Gpio.DIRECTION_IN)
-                setActiveType(Gpio.ACTIVE_LOW)
+                setActiveType(Gpio.ACTIVE_HIGH)
                 setEdgeTriggerType(Gpio.EDGE_BOTH)
                 registerGpioCallback(gpioStateListener)
             }
