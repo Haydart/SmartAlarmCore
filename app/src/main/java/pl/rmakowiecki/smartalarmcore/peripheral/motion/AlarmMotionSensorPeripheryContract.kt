@@ -1,11 +1,13 @@
-
-import io.reactivex.Single
+import io.reactivex.Observable
+import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 
 interface AlarmMotionSensorPeripheryContract {
-    fun registerForChanges(): Single<Boolean>
-    fun readValue(): Boolean
+    fun registerForChanges(): Observable<AlarmTriggerState>
+    fun readValue(): AlarmTriggerState
 
     companion object {
         fun create() = AlarmMotionSensorPeriphery()
     }
+
+    fun unregisterFromChanges()
 }
