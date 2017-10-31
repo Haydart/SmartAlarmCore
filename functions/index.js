@@ -53,7 +53,6 @@ exports.sendAlarmNotification = functions.database.ref('/{currentCoreDeviceUid}/
 });
 
 
-
 'use strict';
 
 const mkdirp = require('mkdirp-promise');
@@ -127,8 +126,8 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
   }).then(() => {
     console.log('Thumbnail uploaded to Storage at', thumbFilePath);
     // Once the image has been uploaded delete the local files to free up disk space.
-    fs.unlinkSync(tempLocalFile);
-    fs.unlinkSync(tempLocalThumbFile);
+    fs.unlink(tempLocalFile, function () { console.log('done deleting tempLocalFile'); });
+    fs.unlink(tempLocalThumbFile, function () { console.log('Done deleting tempLocalThumbFile'); });
     // Get the Signed URLs for the thumbnail and original image.
     const config = {
       action: 'read',

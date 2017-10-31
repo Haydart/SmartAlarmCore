@@ -14,8 +14,8 @@ import pl.rmakowiecki.smartalarmcore.extensions.logW
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
 import java.util.*
 
-private const val PHOTO_WIDTH = 1280
-private const val PHOTO_HEIGHT = 768
+private const val PHOTO_WIDTH = 1920
+private const val PHOTO_HEIGHT = 1080
 private const val PHOTO_MAX_COUNT = 1
 
 class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
