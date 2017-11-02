@@ -53,6 +53,61 @@ exports.sendAlarmNotification = functions.database.ref('/{currentCoreDeviceUid}/
 });
 
 
+exports.sendCoreDevicePresenceNotification = functions.database.ref('/{currentCoreDeviceUid}/state/connected').onWrite(event => {
+    const data = event.data;
+    const coreUid = event.params.currentCoreDeviceUid
+
+    console.log('Alarm presence event fired');
+    if (!data.changed()) {
+        console.log('Data not changed, no notification will be sent');
+        return;
+    }
+
+
+    var notification;
+
+    if(data.val() === false) {
+            notification = {
+                notification: {
+                    title: 'SmartAlarm',
+                    body: 'Your core device has been disconnected. This may be due to the Internet connection or power shortage.',
+                    sound: "default"
+                }
+            };
+    } else {
+            notification = {
+                notification: {
+                    title: 'SmartAlarm',
+                    body: 'Your core device has come back online.',
+                    sound: "default"
+                }
+            };
+    }
+
+    const options = {
+                priority: "high",
+                timeToLive: 60 * 60 * 24 //24 hours
+            };
+
+            console.log('Sending presence notification!');
+            return admin.messaging().sendToTopic(coreUid, notification, options).then(response => {
+               // For each message check if there was an error.
+               const tokensToRemove = [];
+               response.results.forEach((result, index) => {
+                   const error = result.error;
+                   if (error) {
+                      console.error('Failure sending notification to', tokens[index], error);
+                      // Cleanup the tokens which are not registered anymore.
+                      if (error.code === 'messaging/invalid-registration-token' || error.code === 'messaging/registration-token-not-registered') {
+                          console.log("registration error occurred");
+                      }
+                   }
+               });
+            });
+});
+
+
+
 'use strict';
 
 const mkdirp = require('mkdirp-promise');
