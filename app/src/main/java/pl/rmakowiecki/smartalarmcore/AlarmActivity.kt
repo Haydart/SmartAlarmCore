@@ -17,7 +17,7 @@ class AlarmActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        printWifiNetworkStatus()
+//        printWifiNetworkStatus() test
         alarmController = initSystemController()
     }
 
