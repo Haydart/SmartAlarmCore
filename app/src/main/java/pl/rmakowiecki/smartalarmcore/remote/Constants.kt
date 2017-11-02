@@ -7,4 +7,5 @@ object Nodes {
     const val CORE_DEVICE_DIRECTORY = "core_assets"
     const val IMAGES_DIRECTORY = "images"
     const val INCIDENTS = "incidents"
+    const val PRESENCE_NODE = "connected"
 }

@@ -21,6 +21,7 @@ import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_STATE
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_TRIGGER
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.CORE_DEVICE_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.IMAGES_DIRECTORY
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.PRESENCE_NODE
 import pl.rmakowiecki.smartalarmcore.toArmingState
 
 class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackendContract {
@@ -34,15 +35,31 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
             .getReferenceFromUrl("gs://smartalarmcore.appspot.com")
 
     override fun signInToBackend(): Single<Boolean> = Single.create { emitter ->
+        reportAbsenceOnDisconnect()
 
         logD(Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID))
 
         getCurrentBackendUser()?.let {
+            reportPresence()
             emitter.onSuccess(true)
         } ?: FirebaseAuth.getInstance()
                 .signInAnonymously()
                 .addOnSuccessListener { signUpAsAuthorizedUser(it.user, emitter) }
     }
+
+    private fun reportAbsenceOnDisconnect() = getCurrentBackendUser()?.uid?.let {
+        val systemPresenceNode = databaseNode.child(it)
+                .child(ALARM_STATE)
+                .child(PRESENCE_NODE)
+
+        systemPresenceNode.onDisconnect().setValue(false)
+    }
+
+    private fun reportPresence() = databaseNode
+            .child(getCurrentBackendUser()?.uid)
+            .child(ALARM_STATE)
+            .child(PRESENCE_NODE)
+            .setValue(true)
 
     private fun signUpAsAuthorizedUser(firebaseUser: FirebaseUser, emitter: SingleEmitter<Boolean>) {
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(
@@ -53,11 +70,14 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
         }.addOnFailureListener(::printStackTrace)
     }
 
-    private fun initializeCoreDeviceNoSqlModel(emitter: SingleEmitter<Boolean>) = databaseNode
-            .child(getCurrentBackendUser()?.uid)
-            .child(ALARM_STATE)
-            .setValue(RemoteAlarmStateModel(true, false))
-            .addOnSuccessListener { emitter.onSuccess(true) }
+    private fun initializeCoreDeviceNoSqlModel(emitter: SingleEmitter<Boolean>) {
+        reportAbsenceOnDisconnect()
+
+        databaseNode.child(getCurrentBackendUser()?.uid)
+                .child(ALARM_STATE)
+                .setValue(RemoteAlarmStateModel(true, false, true))
+                .addOnSuccessListener { emitter.onSuccess(true) }
+    }
 
     override fun isLoggedInToBackend(): Single<Boolean> =
             Single.just(getCurrentBackendUser() != null)
@@ -119,7 +139,8 @@ private fun DataSnapshot.getArmingState() = (this.value as Boolean).toArmingStat
 
 class RemoteAlarmStateModel(
         val active: Boolean,
-        val triggered: Boolean
+        val triggered: Boolean,
+        val connected: Boolean
 )
 
 class SecurityIncidentResponse(
