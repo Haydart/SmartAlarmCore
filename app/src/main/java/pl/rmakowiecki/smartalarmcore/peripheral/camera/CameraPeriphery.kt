@@ -1,6 +1,8 @@
 package pl.rmakowiecki.smartalarmcore.peripheral.camera
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.ImageReader
@@ -12,6 +14,7 @@ import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.logE
 import pl.rmakowiecki.smartalarmcore.extensions.logW
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 private const val PHOTO_WIDTH = 1920
@@ -83,7 +86,10 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
 
     private fun onPictureTaken(imageBytes: ByteArray?) {
         if (imageBytes != null) {
-            photoPublishSubject.onNext(imageBytes)
+            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+            photoPublishSubject.onNext(outputStream.toByteArray())
         }
     }
 
