@@ -8,8 +8,8 @@ import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.AlarmTriggerPeripheralDevice
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
-import pl.rmakowiecki.smartalarmcore.remote.AlarmTriggerReason
-import pl.rmakowiecki.smartalarmcore.remote.SecurityIncident
+import pl.rmakowiecki.smartalarmcore.remote.models.AlarmTriggerReason
+import pl.rmakowiecki.smartalarmcore.remote.models.SecurityIncident
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmController(
@@ -55,7 +55,7 @@ class AlarmController(
             observeBeamBreakDetector()
             observeMotionSensor()
         }
-        else -> {
+        AlarmArmingState.DISARMED -> {
             beamBreakDetectorDisposable.dispose()
             motionSensorDisposable.dispose()
         }
@@ -70,7 +70,7 @@ class AlarmController(
                             onNext = {
                                 updateAlarmTriggerState(it)
                                 if (it == TRIGGERED) {
-                                    reportBeamBreakIncident()
+                                    reportAlarmIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR)
                                 }
                             }
                     )
@@ -83,15 +83,24 @@ class AlarmController(
                     .registerForChanges()
                     .applyIoSchedulers()
                     .subscribeBy(
-                            onNext = { /*logD(it)*/ }
+                            onNext = {
+                                updateAlarmTriggerState(it)
+                                if (it == TRIGGERED) {
+                                    reportAlarmIncident(AlarmTriggerReason.MOTION_SENSOR)
+                                }
+                            }
                     )
         }
     }
 
-    private fun updateAlarmTriggerState(alarmTriggerState: AlarmTriggerState)
-            = backendInteractor.updateAlarmState(alarmTriggerState)
+    private fun updateAlarmTriggerState(alarmTriggerState: AlarmTriggerState) = backendInteractor
+            .updateAlarmState(alarmTriggerState)
+            .applyIoSchedulers()
+            .subscribeBy(
+                    onSuccess = { logD("Updating trigger value on server successful") }
+            )
 
-    private fun reportBeamBreakIncident() {
+    private fun reportAlarmIncident(reason: AlarmTriggerReason) {
         val reportTimestamp = System.currentTimeMillis()
 
         val cameraPhotoObservable = camera.capturePhoto()
@@ -100,7 +109,7 @@ class AlarmController(
         cameraPhotoObservable.subscribeBy(onNext = { logD("camera photo taken") })
 
         backendInteractor
-                .reportSecurityIncident(SecurityIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR, reportTimestamp))
+                .reportSecurityIncident(SecurityIncident(reason, reportTimestamp))
                 .flatMapObservable { incidentModel ->
                     cameraPhotoObservable
                             .flatMapSingle { (photo, photoNumber) ->

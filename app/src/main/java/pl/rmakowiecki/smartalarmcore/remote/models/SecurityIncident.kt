@@ -1,4 +1,4 @@
-package pl.rmakowiecki.smartalarmcore.remote
+package pl.rmakowiecki.smartalarmcore.remote.models
 
 class SecurityIncident(
         val reason: AlarmTriggerReason,

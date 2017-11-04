@@ -17,11 +17,13 @@ import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_ARMING
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_SETTINGS
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_STATE
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_TRIGGER
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.CORE_DEVICE_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.IMAGES_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.PRESENCE_NODE
+import pl.rmakowiecki.smartalarmcore.remote.models.*
 import pl.rmakowiecki.smartalarmcore.toArmingState
 
 class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackendContract {
@@ -75,8 +77,13 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
         databaseNode.child(getCurrentBackendUser()?.uid)
                 .child(ALARM_STATE)
-                .setValue(RemoteAlarmStateModel(true, false, true))
-                .addOnSuccessListener { emitter.onSuccess(true) }
+                .setValue(RemoteAlarmStateModel.createDefault())
+                .addOnCompleteListener {
+                    databaseNode.child(getCurrentBackendUser()?.uid)
+                            .child(ALARM_SETTINGS)
+                            .setValue(CameraSequenceSettingsModel.createDefault())
+                            .addOnSuccessListener { emitter.onSuccess(true) }
+                }
     }
 
     override fun isLoggedInToBackend(): Single<Boolean> =
@@ -103,12 +110,12 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
         }
     }
 
-    override fun updateAlarmState(alarmState: AlarmTriggerState) {
+    override fun updateAlarmState(alarmState: AlarmTriggerState): Single<Boolean> = Single.create { emitter ->
         databaseNode.child(getCurrentBackendUser()?.uid)
                 .child(ALARM_STATE)
                 .child(ALARM_TRIGGER)
                 .setValue(alarmState.toBoolean())
-                .addOnCompleteListener { }
+                .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
     }
 
     override fun reportSecurityIncident(securityIncident: SecurityIncident): Single<SecurityIncidentResponse> = Single.create { emitter ->
@@ -126,7 +133,6 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
     }
 
     override fun uploadIncidentPhoto(photoBytes: ByteArray, uniqueIncidentId: String, photoNumber: Int): Single<Boolean> = Single.create { emitter ->
-
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
                 .child(getCurrentBackendUser()?.uid ?: "non_assignable_incidents")
@@ -137,14 +143,3 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 }
 
 private fun DataSnapshot.getArmingState() = (this.value as Boolean).toArmingState()
-
-class RemoteAlarmStateModel(
-        val active: Boolean,
-        val triggered: Boolean,
-        val connected: Boolean
-)
-
-class SecurityIncidentResponse(
-        val isSuccessful: Boolean,
-        val generatedId: String
-)
