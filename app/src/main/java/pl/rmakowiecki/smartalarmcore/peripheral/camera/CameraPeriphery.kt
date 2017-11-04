@@ -19,8 +19,8 @@ import java.util.*
 private const val PHOTO_WIDTH = 1920
 private const val PHOTO_HEIGHT = 1080
 private const val PHOTO_MAX_COUNT = 10
-private const val PHOHOS_IN_SEQUENCE = 10
-private const val PHOTO_SEQUENCE_INTERVAL = 250
+private const val PHOTOS_IN_SEQUENCE = 10
+private const val PHOTO_SEQUENCE_INTERVAL = 250L
 
 class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
 
@@ -69,29 +69,26 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
         override fun onCaptureCompleted(session: CameraCaptureSession?, request: CaptureRequest?, result: TotalCaptureResult?) {
             super.onCaptureCompleted(session, request, result)
 
-            session?.close()
-            logD("CaptureSession closed")
+            logD("picture taken")
+
+            if (photosEmittedInSequence < PHOTOS_IN_SEQUENCE) {
+                Thread.sleep(PHOTO_SEQUENCE_INTERVAL)
+                triggerImageCapture()
+            } else {
+                session?.close()
+                logD("CaptureSession closed")
+            }
         }
     }
 
     private fun triggerImageCapture() {
         try {
-            val captureBuilder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_ZERO_SHUTTER_LAG)
+            val captureBuilder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
             captureBuilder?.addTarget(imageReadProcessor?.surface)
             captureBuilder?.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
 
             logD("Session initialized.")
 
-            val cameraRequests = mutableListOf<CaptureRequest>()
-            (1..10).map {
-                val request = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-                request?.addTarget(imageReadProcessor?.surface)
-                request?.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
-                request?.build()
-
-            }.forEach { cameraRequests.add(it!!) }
-
-//            cameraCaptureSession?.captureBurst(cameraRequests, cameraCaptureCallback, null) CANNOT BE INTERLEAVED
             cameraCaptureSession?.capture(captureBuilder?.build(), cameraCaptureCallback, null)
         } catch (cameraAccessException: CameraAccessException) {
             printStackTrace(cameraAccessException)
@@ -126,7 +123,7 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
             imageReadProcessor?.setOnImageAvailableListener(
                     { reader -> processTakenImage(reader) },
                     backgroundHandler)
-            cameraDevice?.createCaptureSession(Collections.singletonList(imageReadProcessor?.surface), cameraSessionCallback, null)
+            cameraDevice?.createCaptureSession(Collections.singletonList(imageReadProcessor?.surface), cameraSessionCallback, backgroundHandler)
         } catch (cameraAccessException: CameraAccessException) {
             printStackTrace(cameraAccessException)
         }
@@ -154,8 +151,8 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
     private fun compressTakenImage(imageBytes: ByteArray): ByteArray {
         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
         val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-        return outputStream.toByteArray()
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+        return outputStream.toByteArray() ?: imageBytes
     }
 
     override fun closeCamera() {

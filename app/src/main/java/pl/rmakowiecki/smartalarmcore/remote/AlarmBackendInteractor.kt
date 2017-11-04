@@ -17,6 +17,7 @@ import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.extensions.printStackTrace
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_ARMING
+import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_SETTINGS
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_STATE
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_TRIGGER
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.CORE_DEVICE_DIRECTORY
@@ -75,8 +76,13 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
         databaseNode.child(getCurrentBackendUser()?.uid)
                 .child(ALARM_STATE)
-                .setValue(RemoteAlarmStateModel(true, false, true))
-                .addOnSuccessListener { emitter.onSuccess(true) }
+                .setValue(RemoteAlarmStateModel.createDefault())
+                .addOnCompleteListener {
+                    databaseNode.child(getCurrentBackendUser()?.uid)
+                            .child(ALARM_SETTINGS)
+                            .setValue(CameraSequenceSettingsModel.createDefault())
+                            .addOnSuccessListener { emitter.onSuccess(true) }
+                }
     }
 
     override fun isLoggedInToBackend(): Single<Boolean> =
@@ -126,7 +132,6 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
     }
 
     override fun uploadIncidentPhoto(photoBytes: ByteArray, uniqueIncidentId: String, photoNumber: Int): Single<Boolean> = Single.create { emitter ->
-
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
                 .child(getCurrentBackendUser()?.uid ?: "non_assignable_incidents")
@@ -138,11 +143,24 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 
 private fun DataSnapshot.getArmingState() = (this.value as Boolean).toArmingState()
 
+class CameraSequenceSettingsModel(
+        val sessionPhotoCount: Int,
+        val photoSequenceIntervalMillis: Int) {
+
+    companion object {
+        fun createDefault() = CameraSequenceSettingsModel(20, 250)
+    }
+}
+
 class RemoteAlarmStateModel(
         val active: Boolean,
         val triggered: Boolean,
-        val connected: Boolean
-)
+        val connected: Boolean) {
+
+    companion object {
+        fun createDefault() = RemoteAlarmStateModel(true, false, true)
+    }
+}
 
 class SecurityIncidentResponse(
         val isSuccessful: Boolean,
