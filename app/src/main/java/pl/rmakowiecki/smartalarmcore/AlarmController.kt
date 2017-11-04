@@ -55,7 +55,7 @@ class AlarmController(
             observeBeamBreakDetector()
             observeMotionSensor()
         }
-        else -> {
+        AlarmArmingState.DISARMED -> {
             beamBreakDetectorDisposable.dispose()
             motionSensorDisposable.dispose()
         }

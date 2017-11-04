@@ -110,12 +110,12 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
         }
     }
 
-    override fun updateAlarmState(alarmState: AlarmTriggerState) {
+    override fun updateAlarmState(alarmState: AlarmTriggerState): Single<Boolean> = Single.create { emitter ->
         databaseNode.child(getCurrentBackendUser()?.uid)
                 .child(ALARM_STATE)
                 .child(ALARM_TRIGGER)
                 .setValue(alarmState.toBoolean())
-                .addOnCompleteListener { }
+                .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
     }
 
     override fun reportSecurityIncident(securityIncident: SecurityIncident): Single<SecurityIncidentResponse> = Single.create { emitter ->
