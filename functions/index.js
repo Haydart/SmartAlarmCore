@@ -133,9 +133,10 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
   const tempLocalThumbFile = path.join(os.tmpdir(), thumbFilePath);
 
   const pathParts = fileDir.split('/')
+  const fileNameParts = fileName.split('#')
 
   const coreDeviceUid = pathParts[pathParts.length - 1]
-  const incidentUid = fileName.slice(0, -4);
+  const incidentUid = fileNameParts[0] //fileName is in format "x#y.jpg", where x is UID and y is the order number of the photo in photo sequence
 
   // Exit if this is triggered on a file that is not an image.
   if (!event.data.contentType.startsWith('image/')) {
@@ -158,6 +159,11 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
   // Exit if this is a move or deletion event.
   if (event.data.resourceState === 'not_exists') {
     console.log('This is a deletion event.');
+    return;
+  }
+
+  if (!fileName.endsWith('#1.jpg')) {
+    console.log('This is not the first photo in the sequence.');
     return;
   }
 

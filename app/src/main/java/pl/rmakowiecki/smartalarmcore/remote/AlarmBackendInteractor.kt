@@ -125,11 +125,12 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
                 }
     }
 
-    override fun uploadIncidentPhoto(photoBytes: ByteArray, uniqueIncidentId: String): Single<Boolean> = Single.create { emitter ->
+    override fun uploadIncidentPhoto(photoBytes: ByteArray, uniqueIncidentId: String, photoNumber: Int): Single<Boolean> = Single.create { emitter ->
+
         storageNode.child(CORE_DEVICE_DIRECTORY)
                 .child(IMAGES_DIRECTORY)
                 .child(getCurrentBackendUser()?.uid ?: "non_assignable_incidents")
-                .child("$uniqueIncidentId.jpg")
+                .child("$uniqueIncidentId#$photoNumber.jpg")
                 .putBytes(photoBytes)
                 .addOnCompleteListener { emitter.onSuccess(it.isSuccessful) }
     }

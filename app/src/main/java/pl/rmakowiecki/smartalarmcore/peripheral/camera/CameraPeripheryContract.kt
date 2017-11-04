@@ -6,7 +6,7 @@ import io.reactivex.Observable
 interface CameraPeripheryContract {
     fun openCamera()
     fun closeCamera()
-    fun capturePhoto(): Observable<ByteArray>
+    fun capturePhoto(): Observable<Pair<ByteArray, Int>>
 
     companion object {
         fun create(context: Context) = CameraPeriphery(context)
