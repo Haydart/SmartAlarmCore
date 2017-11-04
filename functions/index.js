@@ -161,6 +161,11 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
     return;
   }
 
+  if (!fileName.endsWith('#1')) {
+    console.log('This is not the first photo in the sequence.');
+    return;
+  }
+
   // Cloud Storage files.
   const bucket = gcs.bucket(event.data.bucket);
   const file = bucket.file(filePath);
