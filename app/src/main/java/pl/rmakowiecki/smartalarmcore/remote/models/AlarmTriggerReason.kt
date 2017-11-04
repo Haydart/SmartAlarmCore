@@ -1,4 +1,4 @@
-package pl.rmakowiecki.smartalarmcore.remote
+package pl.rmakowiecki.smartalarmcore.remote.models
 
 enum class AlarmTriggerReason {
     BEAM_BREAK_DETECTOR,

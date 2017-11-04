@@ -8,8 +8,8 @@ import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.AlarmTriggerPeripheralDevice
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
-import pl.rmakowiecki.smartalarmcore.remote.AlarmTriggerReason
-import pl.rmakowiecki.smartalarmcore.remote.SecurityIncident
+import pl.rmakowiecki.smartalarmcore.remote.models.AlarmTriggerReason
+import pl.rmakowiecki.smartalarmcore.remote.models.SecurityIncident
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
 class AlarmController(

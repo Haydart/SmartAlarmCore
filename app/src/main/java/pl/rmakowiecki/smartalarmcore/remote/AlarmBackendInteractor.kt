@@ -23,6 +23,7 @@ import pl.rmakowiecki.smartalarmcore.remote.Nodes.ALARM_TRIGGER
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.CORE_DEVICE_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.IMAGES_DIRECTORY
 import pl.rmakowiecki.smartalarmcore.remote.Nodes.PRESENCE_NODE
+import pl.rmakowiecki.smartalarmcore.remote.models.*
 import pl.rmakowiecki.smartalarmcore.toArmingState
 
 class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackendContract {
@@ -142,27 +143,3 @@ class AlarmBackendInteractor(private val activity: AlarmActivity) : AlarmBackend
 }
 
 private fun DataSnapshot.getArmingState() = (this.value as Boolean).toArmingState()
-
-class CameraSequenceSettingsModel(
-        val sessionPhotoCount: Int,
-        val photoSequenceIntervalMillis: Int) {
-
-    companion object {
-        fun createDefault() = CameraSequenceSettingsModel(20, 250)
-    }
-}
-
-class RemoteAlarmStateModel(
-        val active: Boolean,
-        val triggered: Boolean,
-        val connected: Boolean) {
-
-    companion object {
-        fun createDefault() = RemoteAlarmStateModel(true, false, true)
-    }
-}
-
-class SecurityIncidentResponse(
-        val isSuccessful: Boolean,
-        val generatedId: String
-)

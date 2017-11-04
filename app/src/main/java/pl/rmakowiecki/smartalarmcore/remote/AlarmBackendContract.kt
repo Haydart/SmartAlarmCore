@@ -5,6 +5,8 @@ import io.reactivex.Single
 import pl.rmakowiecki.smartalarmcore.AlarmActivity
 import pl.rmakowiecki.smartalarmcore.AlarmArmingState
 import pl.rmakowiecki.smartalarmcore.AlarmTriggerState
+import pl.rmakowiecki.smartalarmcore.remote.models.SecurityIncident
+import pl.rmakowiecki.smartalarmcore.remote.models.SecurityIncidentResponse
 
 interface AlarmBackendContract {
     fun isLoggedInToBackend(): Single<Boolean>
