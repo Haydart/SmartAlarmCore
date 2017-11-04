@@ -28,8 +28,9 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
     private var cameraCaptureSession: CameraCaptureSession? = null
     private var imageReadProcessor: ImageReader? = null
     private var cameraId: String = ""
+    private var photosEmittedInSequence = 0
 
-    private val photoPublishSubject: PublishSubject<ByteArray> = PublishSubject.create()
+    private val photoPublishSubject: PublishSubject<Pair<ByteArray, Int>> = PublishSubject.create()
 
     private val cameraStateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
@@ -89,7 +90,7 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
             val outputStream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-            photoPublishSubject.onNext(outputStream.toByteArray())
+            photoPublishSubject.onNext(Pair(outputStream.toByteArray(), ++photosEmittedInSequence))
         }
     }
 
@@ -117,8 +118,9 @@ class CameraPeriphery(private var context: Context?) : CameraPeripheryContract {
         }
     }
 
-    override fun capturePhoto(): Observable<ByteArray> {
+    override fun capturePhoto(): Observable<Pair<ByteArray, Int>> {
         takePicture()
+        photosEmittedInSequence = 0
         return photoPublishSubject
     }
 

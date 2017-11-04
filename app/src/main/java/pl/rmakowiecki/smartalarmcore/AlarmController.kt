@@ -103,8 +103,8 @@ class AlarmController(
                 .reportSecurityIncident(SecurityIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR, reportTimestamp))
                 .flatMapObservable { incidentModel ->
                     cameraPhotoObservable
-                            .flatMapSingle { photo ->
-                                backendInteractor.uploadIncidentPhoto(photo, incidentModel.generatedId)
+                            .flatMapSingle { (photo, photoNumber) ->
+                                backendInteractor.uploadIncidentPhoto(photo, incidentModel.generatedId, photoNumber)
                             }
                 }.applyIoSchedulers()
                 .subscribeBy(
