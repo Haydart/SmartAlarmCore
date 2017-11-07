@@ -8,6 +8,7 @@ import android.util.Log
 import pl.rmakowiecki.smartalarmcore.peripheral.beam.BeamBreakDetectorPeriphery
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
 import pl.rmakowiecki.smartalarmcore.peripheral.motion.MotionSensorPeriphery
+import pl.rmakowiecki.smartalarmcore.peripheral.soundalarm.SoundAlarmPeriphery
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
 import pl.rmakowiecki.smartalarmcore.setup.UsbSetupProviderContract
 
@@ -17,7 +18,6 @@ class AlarmActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        printWifiNetworkStatus() test
         alarmController = initSystemController()
     }
 
@@ -25,6 +25,7 @@ class AlarmActivity : AppCompatActivity() {
             BeamBreakDetectorPeriphery(),
             MotionSensorPeriphery(),
             CameraPeripheryContract.create(this),
+            SoundAlarmPeriphery(),
             AlarmBackendContract.create(this),
             UsbSetupProviderContract.create(this)
     )
