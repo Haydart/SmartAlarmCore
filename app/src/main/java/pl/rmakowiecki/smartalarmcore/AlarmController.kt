@@ -7,6 +7,7 @@ import pl.rmakowiecki.smartalarmcore.extensions.applyIoSchedulers
 import pl.rmakowiecki.smartalarmcore.extensions.logD
 import pl.rmakowiecki.smartalarmcore.peripheral.AlarmTriggerPeripheralDevice
 import pl.rmakowiecki.smartalarmcore.peripheral.camera.CameraPeripheryContract
+import pl.rmakowiecki.smartalarmcore.peripheral.soundalarm.SoundAlarmPeriphery
 import pl.rmakowiecki.smartalarmcore.remote.AlarmBackendContract
 import pl.rmakowiecki.smartalarmcore.remote.models.AlarmTriggerReason
 import pl.rmakowiecki.smartalarmcore.remote.models.SecurityIncident
@@ -16,6 +17,7 @@ class AlarmController(
         private val beamBreakDetector: AlarmTriggerPeripheralDevice,
         private val motionSensor: AlarmTriggerPeripheralDevice,
         private val camera: CameraPeripheryContract,
+        private val soundAlarmPeriphery: SoundAlarmPeriphery,
         private val backendInteractor: AlarmBackendContract,
         private val usbSetupProvider: UsbSetupProviderContract
 ) {
@@ -71,7 +73,8 @@ class AlarmController(
                                 updateAlarmTriggerState(it)
                                 if (it == TRIGGERED) {
                                     reportAlarmIncident(AlarmTriggerReason.BEAM_BREAK_DETECTOR)
-                                }
+                                    soundAlarmPeriphery.startSiren()
+                                } else soundAlarmPeriphery.stopSiren()
                             }
                     )
         }
@@ -88,7 +91,8 @@ class AlarmController(
                                 if (it == TRIGGERED) {
 //                                    reportAlarmIncident(AlarmTriggerReason.MOTION_SENSOR)
                                     logD("motion sensor triggered")
-                                }
+                                    soundAlarmPeriphery.startSiren()
+                                } else soundAlarmPeriphery.stopSiren()
                             }
                     )
         }
