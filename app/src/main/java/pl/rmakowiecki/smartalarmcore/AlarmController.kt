@@ -84,9 +84,10 @@ class AlarmController(
                     .applyIoSchedulers()
                     .subscribeBy(
                             onNext = {
-                                updateAlarmTriggerState(it)
+                                //                                updateAlarmTriggerState(it)
                                 if (it == TRIGGERED) {
-                                    reportAlarmIncident(AlarmTriggerReason.MOTION_SENSOR)
+//                                    reportAlarmIncident(AlarmTriggerReason.MOTION_SENSOR)
+                                    logD("motion sensor triggered")
                                 }
                             }
                     )
